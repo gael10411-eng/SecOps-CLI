@@ -1,0 +1,5 @@
+requests>=2.25.1
+cryptography>=3.4.7
+rich>=10.0.0
+colorama>=2.0.0
+python-dotenv>=20.0.0
