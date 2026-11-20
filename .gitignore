@@ -1,16 +1,34 @@
+
+# =========================
+# VARIABLES DE ENTORNO
+# =========================
 .env
 .env.*
-!.emv.example
+!.env.example
+
+# =========================
+# PYTHON
+# =========================
 __pycache__/
 *.py[cod]
-.$py.class
+*$py.class
 *.so
+
+# Entornos virtuales
 venv/
 .venv/
-env
-.log
-.tmp
-.bak
+env/
+
+# =========================
+# ARCHIVOS DE CONFIGURACIÓN
+# =========================
+*.log
+*.tmp
+*.bak
+
+# =========================
+# DATOS PRIVADOS
+# =========================
 data/
 credentials/
 *.enc
@@ -18,5 +36,23 @@ credentials/
 *.pem
 *.p12
 *.pfx
-thumbs.db
+
+# =========================
+# PRUEBAS
+# =========================
+.pytest_cache/
+.coverage
+htmlcov/
+
+# =========================
+# EDITORES
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# SISTEMA OPERATIVO
+# =========================
+.DS_Store
+Thumbs.db
 desktop.ini
