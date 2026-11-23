@@ -56,3 +56,10 @@ htmlcov/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Evidencias y archivos generados por el laboratorio BAS
+evidence/incoming/
+evidence/received/
+evidence/logs/
+evidence/manifests/
+evidence/reports/
