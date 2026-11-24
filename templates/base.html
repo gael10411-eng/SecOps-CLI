@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ app_name }} — {% block titulo %}Panel{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header>
+  <div class="logo">{{ app_name }}</div>
+  <nav>
+    {% if session.get('autenticado') %}
+      <a href="{{ url_for('dashboard') }}">Panel</a>
+      <a href="{{ url_for('almacen') }}">Almacén</a>
+      <a href="{{ url_for('buscar') }}">Buscar</a>
+      <a href="{{ url_for('cifrar') }}">Cifrar</a>
+      <a href="{{ url_for('descifrar') }}">Descifrar</a>
+      <a href="{{ url_for('logout') }}">Salir</a>
+    {% endif %}
+  </nav>
+</header>
+<main>
+  {% with mensajes = get_flashed_messages(with_categories=true) %}
+    {% for categoria, mensaje in mensajes %}
+      <div class="alerta {{ categoria }}">{{ mensaje }}</div>
+    {% endfor %}
+  {% endwith %}
+  {% block contenido %}{% endblock %}
+</main>
+<footer>
+  <p>{{ app_name }} — Laboratorio de pentesting. Uso exclusivo en red aislada.</p>
+</footer>
+</body>
+</html>

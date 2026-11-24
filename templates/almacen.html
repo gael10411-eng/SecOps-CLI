@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block titulo %}Almacén{% endblock %}
+{% block contenido %}
+<h1>Almacén de credenciales</h1>
+
+<h2>Guardar credencial</h2>
+<form method="post" action="{{ url_for('almacen') }}">
+  <label>Servicio o plataforma
+    <input type="text" name="servicio" required>
+  </label>
+  <label>Usuario
+    <input type="text" name="usuario" required>
+  </label>
+  <label>Contraseña de la cuenta
+    <input type="password" name="password" required>
+  </label>
+  <button type="submit">Guardar</button>
+</form>
+
+<h2>Servicios registrados</h2>
+{% if credenciales %}
+<table>
+  <tr><th>Servicio</th><th>Usuario</th><th>Contraseña</th></tr>
+  {% for servicio, cuenta in credenciales.items() %}
+  <tr>
+    <td>{{ servicio }}</td>
+    <td>{{ cuenta.username }}</td>
+    <td>********</td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>No hay credenciales almacenadas.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block titulo %}Panel{% endblock %}
+{% block contenido %}
+<h1>Panel de operaciones</h1>
+<p>Versión {{ version }} — Sesión: {{ session.get('usuario') }}</p>
+
+<h2>Servicios en el almacén ({{ servicios|length }})</h2>
+{% if servicios %}
+<ul>
+  {% for servicio in servicios %}
+  <li>{{ servicio }}</li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>Aún no hay credenciales guardadas.</p>
+{% endif %}
+
+<h2>Últimos accesos</h2>
+{% if accesos %}
+<table>
+  <tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Detalle</th></tr>
+  {% for a in accesos %}
+  <tr>
+    <td>{{ a['fecha'] }}</td>
+    <td>{{ a['usuario'] }}</td>
+    <td>{{ a['accion'] }}</td>
+    <td>{{ a['detalle'] }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>Sin registros.</p>
+{% endif %}
+{% endblock %}

@@ -393,3 +393,54 @@ def load_credentials(file_path, master_password):
         )
 
     return credentials
+
+
+# ==========================================
+# ADMINISTRACIÓN DE CONTRASEÑA MAESTRA
+# ==========================================
+
+def create_master_password(password, file_path):
+    """
+    Crea el verificador de la contraseña maestra.
+    Nunca almacena la contraseña original.
+    """
+
+    file_path = Path(file_path)
+
+    if file_path.exists():
+        raise FileExistsError(
+            "Ya existe una configuración de contraseña maestra."
+        )
+
+    _validate_password(password)
+
+    password_hash = hash_password(password)
+
+    _write_atomic(
+        file_path,
+        password_hash.encode("utf-8")
+    )
+
+    return True
+
+
+def verify_master_password(password, file_path):
+    """
+    Verifica la contraseña maestra contra
+    el hash almacenado localmente.
+    """
+
+    file_path = Path(file_path)
+
+    if not file_path.is_file():
+        raise FileNotFoundError(
+            "No existe una contraseña maestra configurada."
+        )
+
+    _validate_password(password)
+
+    stored_hash = file_path.read_text(
+        encoding="utf-8"
+    ).strip()
+
+    return verify_password(password, stored_hash)

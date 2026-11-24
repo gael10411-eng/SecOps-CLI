@@ -1,0 +1,19 @@
+services:
+  specops-web:
+    build: .
+    container_name: specops-web
+    restart: unless-stopped
+    ports:
+      # Puerto 5000 del contenedor -> puerto 5000 de la MV.
+      - "5000:5000"
+    environment:
+      # Cambia la contraseña maestra antes de levantar el laboratorio.
+      - MASTER_PASSWORD=SpecOps2026!
+      - SECRET_KEY=specops-clave-secreta
+      - DEBUG=True
+      - APP_NAME=SpecOps-Web
+      - APP_VERSION=1.0.0
+    volumes:
+      # Los datos (almacén cifrado, registro, archivos) persisten
+      # fuera del contenedor.
+      - ./data:/app/data

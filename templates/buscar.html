@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block titulo %}Buscar{% endblock %}
+{% block contenido %}
+<h1>Buscar en el almacén</h1>
+<form method="get" action="{{ url_for('buscar') }}">
+  <label>Servicio
+    <input type="text" name="q" value="{{ q }}" autofocus>
+  </label>
+  <button type="submit">Buscar</button>
+</form>
+
+{% if q %}
+{# VULNERABILIDAD INTENCIONAL: |safe muestra la consulta sin escapar (XSS). #}
+<h2>Resultados para: {{ q|safe }}</h2>
+{% if resultados %}
+<table>
+  <tr><th>Servicio</th><th>Usuario</th></tr>
+  {% for r in resultados %}
+  <tr>
+    <td>{{ r['servicio'] }}</td>
+    <td>{{ r['usuario'] }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>Sin coincidencias.</p>
+{% endif %}
+{% endif %}
+{% endblock %}

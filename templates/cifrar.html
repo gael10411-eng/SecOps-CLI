@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block titulo %}Cifrar{% endblock %}
+{% block contenido %}
+<h1>Cifrar archivo</h1>
+<p>El archivo se cifra con la contraseña maestra (formato GAELCRYPT1) y queda listo para descargar.</p>
+<form method="post" action="{{ url_for('cifrar') }}" enctype="multipart/form-data">
+  <label>Archivo
+    <input type="file" name="archivo" required>
+  </label>
+  <button type="submit">Cifrar</button>
+</form>
+{% endblock %}

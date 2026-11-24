@@ -10,6 +10,8 @@ from modules.auth_crypto import (
     decrypt_file,
     save_credentials,
     load_credentials,
+    create_master_password,
+    verify_master_password,
     CryptoError,
     AuthenticationError,
     InvalidFileError
@@ -27,6 +29,7 @@ APP_VERSION = os.getenv("APP_VERSION", "1.0.0")
 
 DATA_DIR = Path("data")
 VAULT_PATH = DATA_DIR / "credentials.enc"
+MASTER_PATH = DATA_DIR / "master.hash"
 
 
 # ==========================================
@@ -83,7 +86,7 @@ def confirm_overwrite(path):
 # CIFRADO DE ARCHIVOS
 # ==========================================
 
-def encrypt_operation():
+def encrypt_operation(master_password):
     """Solicita los datos necesarios para cifrar."""
 
     print("\n--- CIFRADO DE ARCHIVOS ---")
@@ -114,12 +117,10 @@ def encrypt_operation():
         print("[INFO] Operación cancelada.")
         return
 
-    password = getpass("Contraseña maestra: ")
-
     encrypt_file(
         input_path,
         output_path,
-        password
+        master_password
     )
 
     print(f"\n[OK] Archivo cifrado: {output_path}")
@@ -129,7 +130,7 @@ def encrypt_operation():
 # DESCIFRADO DE ARCHIVOS
 # ==========================================
 
-def decrypt_operation():
+def decrypt_operation(master_password):
     """Solicita los datos necesarios para descifrar."""
 
     print("\n--- DESCIFRADO DE ARCHIVOS ---")
@@ -165,12 +166,10 @@ def decrypt_operation():
         print("[INFO] Operación cancelada.")
         return
 
-    password = getpass("Contraseña maestra: ")
-
     decrypt_file(
         input_path,
         output_path,
-        password
+        master_password
     )
 
     print(f"\n[OK] Archivo recuperado: {output_path}")
@@ -180,7 +179,7 @@ def decrypt_operation():
 # GUARDAR CREDENCIALES
 # ==========================================
 
-def save_credentials_operation():
+def save_credentials_operation(master_password):
     """Guarda o actualiza credenciales en el almacén cifrado."""
 
     print("\n--- ALMACENAMIENTO DE CREDENCIALES ---")
@@ -192,8 +191,6 @@ def save_credentials_operation():
     if not service or not username or not account_password:
         print("[ERROR] Todos los campos son obligatorios.")
         return
-
-    master_password = getpass("Contraseña maestra del almacén: ")
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -223,7 +220,7 @@ def save_credentials_operation():
 # CONSULTAR CREDENCIALES
 # ==========================================
 
-def load_credentials_operation():
+def load_credentials_operation(master_password):
     """Recupera credenciales desde el almacén cifrado."""
 
     print("\n--- CONSULTA DE CREDENCIALES ---")
@@ -231,8 +228,6 @@ def load_credentials_operation():
     if not VAULT_PATH.is_file():
         print("[ERROR] Todavía no existe un almacén de credenciales.")
         return
-
-    master_password = getpass("Contraseña maestra: ")
 
     credentials = load_credentials(
         VAULT_PATH,
@@ -267,7 +262,100 @@ def load_credentials_operation():
     print("\n--- INFORMACIÓN RECUPERADA ---")
     print(f"Servicio: {selected_service}")
     print(f"Usuario: {account.get('username', '')}")
-    print(f"Contraseña: {account.get('password', '')}")
+    print("Contraseña: ********")
+
+    show_password = input(
+        "¿Mostrar contraseña? (s/n): "
+    ).strip().lower()
+
+    if show_password == "s":
+        print(f"Contraseña: {account.get('password', '')}")
+
+
+# ==========================================
+# CONFIGURACIÓN Y AUTENTICACIÓN MAESTRA
+# ==========================================
+
+def setup_or_authenticate():
+    """
+    Configura la contraseña maestra en el primer inicio
+    o autentica al usuario en ejecuciones posteriores.
+    """
+
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    # PRIMER INICIO
+    if not MASTER_PATH.exists():
+
+        print("\n================================")
+        print(" CONFIGURACIÓN INICIAL")
+        print("================================")
+
+        print("Crea una contraseña maestra.")
+        print("Longitud mínima: 12 caracteres.\n")
+
+        while True:
+
+            master_password = getpass(
+                "Nueva contraseña maestra: "
+            )
+
+            if len(master_password) < 12:
+                print(
+                    "[ERROR] Debe tener al menos 12 caracteres."
+                )
+                continue
+
+            confirmation = getpass(
+                "Confirma la contraseña: "
+            )
+
+            if master_password != confirmation:
+                print("[ERROR] Las contraseñas no coinciden.")
+                continue
+
+            create_master_password(
+                master_password,
+                MASTER_PATH
+            )
+
+            print("\n[OK] Contraseña maestra configurada.")
+
+            return master_password
+
+    # INICIOS POSTERIORES
+    print("\n================================")
+    print(" AUTENTICACIÓN")
+    print("================================")
+
+    max_attempts = 3
+
+    for attempt in range(1, max_attempts + 1):
+
+        master_password = getpass(
+            "Contraseña maestra: "
+        )
+
+        if verify_master_password(
+            master_password,
+            MASTER_PATH
+        ):
+
+            print("\n[OK] Autenticación exitosa.")
+
+            return master_password
+
+        remaining = max_attempts - attempt
+
+        if remaining > 0:
+            print(
+                f"[ERROR] Contraseña incorrecta. "
+                f"Intentos restantes: {remaining}"
+            )
+
+    print("\n[ACCESO DENEGADO] Se agotaron los intentos.")
+
+    return None
 
 
 # ==========================================
@@ -275,7 +363,12 @@ def load_credentials_operation():
 # ==========================================
 
 def main():
-    """Ejecuta el menú principal de SpecOps-CLI."""
+    """Ejecuta SpecOps-CLI con autenticación previa."""
+
+    master_password = setup_or_authenticate()
+
+    if master_password is None:
+        return
 
     while True:
 
@@ -287,16 +380,16 @@ def main():
         try:
 
             if option == "1":
-                encrypt_operation()
+                encrypt_operation(master_password)
 
             elif option == "2":
-                decrypt_operation()
+                decrypt_operation(master_password)
 
             elif option == "3":
-                save_credentials_operation()
+                save_credentials_operation(master_password)
 
             elif option == "4":
-                load_credentials_operation()
+                load_credentials_operation(master_password)
 
             elif option == "0":
                 print("\nCerrando SpecOps-CLI...")
@@ -307,7 +400,10 @@ def main():
                 print("\n[ERROR] Opción no válida.")
 
         except AuthenticationError:
-            print("\n[ERROR] Contraseña incorrecta o archivo modificado.")
+            print(
+                "\n[ERROR] Contraseña incorrecta "
+                "o archivo modificado."
+            )
 
         except InvalidFileError as error:
             print(f"\n[ERROR] Archivo inválido: {error}")
@@ -319,13 +415,20 @@ def main():
             print(f"\n[ERROR] Archivo no encontrado: {error}")
 
         except PermissionError:
-            print("\n[ERROR] No tienes permisos para acceder al archivo.")
+            print(
+                "\n[ERROR] No tienes permisos "
+                "para acceder al archivo."
+            )
 
         except (OSError, ValueError) as error:
-            print(f"\n[ERROR] No se pudo completar la operación: {error}")
+            print(
+                f"\n[ERROR] No se pudo completar "
+                f"la operación: {error}"
+            )
 
         except KeyboardInterrupt:
             print("\n\n[INFO] Operación interrumpida.")
+            break
 
         if option != "0":
             pause()
@@ -336,7 +439,9 @@ def main():
 # ==========================================
 
 if __name__ == "__main__":
+
     try:
         main()
+
     except KeyboardInterrupt:
         print("\n\nSpecOps-CLI finalizado.")

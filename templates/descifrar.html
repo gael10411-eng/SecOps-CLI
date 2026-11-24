@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block titulo %}Descifrar{% endblock %}
+{% block contenido %}
+<h1>Descifrar archivo</h1>
+<p>Sube un archivo .enc generado por SpecOps y recupera el original.</p>
+<form method="post" action="{{ url_for('descifrar') }}" enctype="multipart/form-data">
+  <label>Archivo .enc
+    <input type="file" name="archivo" required>
+  </label>
+  <button type="submit">Descifrar</button>
+</form>
+{% endblock %}
